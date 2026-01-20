@@ -6,6 +6,16 @@ import {
   Copy, Plus, Search, LogOut, RefreshCw, Terminal, AlertTriangle, X, CheckCircle2
 } from 'lucide-react'
 
+// Definimos la URL base una sola vez para evitar errores
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
+interface PasswordEntry {
+  id?: number;
+  title: string;
+  username?: string;
+  password?: string;
+}
+
 export default function PasswordManager() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -15,13 +25,6 @@ export default function PasswordManager() {
 
   const [password, setPassword] = useState('')
   const [title, setTitle] = useState('')
-  interface PasswordEntry {
-    id?: number;
-    title: string;
-    username?: string;
-    password?: string;
-  }
-
   const [savedPasswords, setSavedPasswords] = useState<PasswordEntry[]>([]);
   const [search, setSearch] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -33,7 +36,7 @@ export default function PasswordManager() {
 
   const fetchPasswords = useCallback(async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/passwords`);
+      const response = await axios.get(`${API_BASE_URL}/api/passwords`);
       setSavedPasswords(response.data);
     } catch (error) { console.error("Fetch error:", error); }
   }, []);
@@ -74,12 +77,13 @@ export default function PasswordManager() {
     if (!title || !password) return;
     setIsLoading(true);
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/passwords`, {
-        title: title,
-        password: password,
+      await axios.post(`${API_BASE_URL}/api/passwords`, {
+        title: title, 
+        password: password, 
         user_id: 1
       });
-      setTitle(''); setPassword('');
+      setTitle(''); 
+      setPassword('');
       fetchPasswords();
     } catch (error) { console.error("Save error:", error); }
     finally { setIsLoading(false); }
@@ -93,14 +97,15 @@ export default function PasswordManager() {
   const deletePassword = async () => {
     if (!itemToDelete) return;
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/passwords/${itemToDelete.id}`);
+      await axios.delete(`${API_BASE_URL}/api/passwords/${itemToDelete.id}`);
       fetchPasswords();
       setIsDeleteModalOpen(false);
       setItemToDelete(null);
     } catch (error) { console.error("Delete error:", error); }
   }
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string | undefined) => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
     setShowCopyToast(true);
     setTimeout(() => setShowCopyToast(false), 2500);
@@ -183,7 +188,7 @@ export default function PasswordManager() {
         </div>
       )}
 
-      {/* MEJORA: BOTÓN FLOTANTE ADAPTABLE PARA MÓVIL */}
+      {/* BOTÓN FLOTANTE */}
       <div className="fixed bottom-6 right-6 z-[100] group">
         <button
           onClick={() => setIsAuthenticated(false)}
@@ -193,7 +198,6 @@ export default function PasswordManager() {
             <span className="animate-ping absolute h-full w-full rounded-full bg-emerald-400 opacity-75 group-hover:bg-red-400"></span>
             <span className="relative rounded-full h-3 w-3 bg-emerald-500 group-hover:bg-red-500"></span>
           </div>
-          {/* El texto solo se muestra en pantallas sm (640px) o superiores al pasar el cursor */}
           <span className="max-w-0 overflow-hidden sm:group-hover:max-w-xs transition-all duration-500 text-[10px] font-black uppercase whitespace-nowrap px-0 sm:group-hover:px-1">
             Cerrar Sistema
           </span>
@@ -253,11 +257,11 @@ export default function PasswordManager() {
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <button onClick={() => toggleVisibility(item.id)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl hover:text-white transition-colors">
+                    <button onClick={() => item.id && toggleVisibility(item.id)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl hover:text-white transition-colors">
                       {visiblePassId === item.id ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                     <button onClick={() => copyToClipboard(item.password)} className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-emerald-500/20 text-emerald-500 rounded-xl transition-colors"><Copy size={18} /></button>
-                    <button onClick={() => confirmDelete(item.id, item.title)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
+                    <button onClick={() => item.id && confirmDelete(item.id, item.title)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
                   </div>
                 </div>
               ))}
