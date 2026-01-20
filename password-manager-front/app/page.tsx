@@ -74,8 +74,10 @@ export default function PasswordManager() {
     if (!title || !password) return;
     setIsLoading(true);
     try {
-      await axios.post('http://127.0.0.1:8000/api/passwords', {
-        title: title, password: password, user_id: 1
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/passwords`, {
+        title: title,
+        password: password,
+        user_id: 1
       });
       setTitle(''); setPassword('');
       fetchPasswords();
@@ -91,7 +93,7 @@ export default function PasswordManager() {
   const deletePassword = async () => {
     if (!itemToDelete) return;
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/passwords/${itemToDelete.id}`);
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/passwords/${itemToDelete.id}`);
       fetchPasswords();
       setIsDeleteModalOpen(false);
       setItemToDelete(null);
