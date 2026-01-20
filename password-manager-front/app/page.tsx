@@ -1,9 +1,9 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
-import { 
-  Lock, Key, Eye, EyeOff, Trash2, 
-  Copy, Plus, Search, LogOut, RefreshCw, Terminal, AlertTriangle, X, CheckCircle2 
+import {
+  Lock, Key, Eye, EyeOff, Trash2,
+  Copy, Plus, Search, LogOut, RefreshCw, Terminal, AlertTriangle, X, CheckCircle2
 } from 'lucide-react'
 
 export default function PasswordManager() {
@@ -15,13 +15,20 @@ export default function PasswordManager() {
 
   const [password, setPassword] = useState('')
   const [title, setTitle] = useState('')
-  const [savedPasswords, setSavedPasswords] = useState<unknown[]>([]) 
+  interface PasswordEntry {
+    id?: number;
+    title: string;
+    username?: string;
+    password?: string;
+  }
+
+  const [savedPasswords, setSavedPasswords] = useState<PasswordEntry[]>([]);
   const [search, setSearch] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [visiblePassId, setVisiblePassId] = useState<number | null>(null)
-  
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [itemToDelete, setItemToDelete] = useState<{id: number, title: string} | null>(null)
+  const [itemToDelete, setItemToDelete] = useState<{ id: number, title: string } | null>(null)
   const [showCopyToast, setShowCopyToast] = useState(false)
 
   const fetchPasswords = useCallback(async () => {
@@ -68,16 +75,16 @@ export default function PasswordManager() {
     setIsLoading(true);
     try {
       await axios.post('http://127.0.0.1:8000/api/passwords', {
-        title: title, password: password, user_id: 1 
+        title: title, password: password, user_id: 1
       });
       setTitle(''); setPassword('');
       fetchPasswords();
-    } catch (error) { console.error("Save error:", error); } 
+    } catch (error) { console.error("Save error:", error); }
     finally { setIsLoading(false); }
   }
 
   const confirmDelete = (id: number, title: string) => {
-    setItemToDelete({id, title})
+    setItemToDelete({ id, title })
     setIsDeleteModalOpen(true)
   }
 
@@ -101,7 +108,7 @@ export default function PasswordManager() {
     setVisiblePassId(visiblePassId === id ? null : id);
   }
 
-  const filteredPasswords = savedPasswords.filter((p) => 
+  const filteredPasswords = savedPasswords.filter((p) =>
     p.title.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -117,7 +124,7 @@ export default function PasswordManager() {
           <h1 className="text-3xl font-black tracking-tighter mb-2 italic uppercase">VAULT CORE</h1>
           <p className="text-slate-500 text-[10px] uppercase tracking-[0.4em] mb-10 font-bold animate-pulse">Waiting for Access...</p>
           <form onSubmit={handleLogin} className="space-y-6">
-            <input 
+            <input
               type="password" placeholder="MASTER KEY"
               className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 outline-none focus:ring-2 focus:ring-blue-500/20 text-center font-mono tracking-[0.5em] transition-all"
               value={masterInput} onChange={(e) => setMasterInput(e.target.value)} autoFocus
@@ -135,7 +142,7 @@ export default function PasswordManager() {
 
   return (
     <div className="min-h-screen bg-[#020203] text-slate-300 flex flex-col items-center py-8 md:py-16 px-4 md:px-6 relative overflow-x-hidden animate-in fade-in duration-500">
-      
+
       {/* Toast de Copiado */}
       <div className={`fixed top-8 right-8 z-[110] flex items-center gap-4 bg-[#0a0a0c]/90 backdrop-blur-2xl border border-emerald-500/30 px-6 py-4 rounded-2xl shadow-2xl transition-all duration-500 transform ${showCopyToast ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-10 opacity-0 scale-95 pointer-events-none'}`}>
         <div className="w-8 h-8 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20">
@@ -159,7 +166,7 @@ export default function PasswordManager() {
               <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter mb-2 leading-none">Eliminar Registro</h2>
               <div className="mb-10">
                 <span className="text-red-500 font-mono text-sm font-bold uppercase tracking-widest bg-red-500/10 px-3 py-1 rounded-lg border border-red-500/20">
-                   {itemToDelete?.title}
+                  {itemToDelete?.title}
                 </span>
                 <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-4 leading-relaxed">
                   ¿Confirmas la eliminación definitiva de esta credencial?
@@ -176,8 +183,8 @@ export default function PasswordManager() {
 
       {/* MEJORA: BOTÓN FLOTANTE ADAPTABLE PARA MÓVIL */}
       <div className="fixed bottom-6 right-6 z-[100] group">
-        <button 
-          onClick={() => setIsAuthenticated(false)} 
+        <button
+          onClick={() => setIsAuthenticated(false)}
           className="flex items-center justify-center gap-3 bg-[#0a0a0c]/80 backdrop-blur-xl border border-white/10 rounded-2xl hover:bg-red-950/20 transition-all shadow-2xl p-4 sm:p-3"
         >
           <div className="relative flex h-3 w-3">
@@ -208,12 +215,12 @@ export default function PasswordManager() {
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Panel Generador */}
           <div className="lg:col-span-5 bg-white/[0.02] backdrop-blur-xl border border-white/5 p-6 sm:p-8 rounded-[2.5rem] sm:rounded-[3rem] shadow-2xl">
-             <div className="space-y-6">
-              <div className="flex items-center gap-2 text-blue-500"><Plus size={16}/><h2 className="text-[10px] font-black uppercase tracking-widest">Nuevo Registro</h2></div>
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 text-blue-500"><Plus size={16} /><h2 className="text-[10px] font-black uppercase tracking-widest">Nuevo Registro</h2></div>
               <input type="text" placeholder="Servicio (ej. Netflix)" className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white outline-none focus:border-blue-500/50" value={title} onChange={(e) => setTitle(e.target.value)} />
               <div className="bg-black/60 p-6 sm:p-8 rounded-2xl text-center border border-white/5 relative group">
                 <span className="font-mono text-xl sm:text-2xl text-emerald-400 break-all">{password || '••••••••'}</span>
-                <button onClick={() => generatePass(16)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-all"><RefreshCw size={16}/></button>
+                <button onClick={() => generatePass(16)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-all"><RefreshCw size={16} /></button>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {[8, 12, 16].map((len) => (
@@ -230,7 +237,7 @@ export default function PasswordManager() {
               <Search size={16} className="text-slate-500" />
               <input type="text" placeholder="Buscar credencial..." className="bg-transparent border-none outline-none text-sm text-white w-full" onChange={(e) => setSearch(e.target.value)} />
             </div>
-            
+
             <div className="space-y-4 max-h-[500px] sm:max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
               {filteredPasswords.map((item) => (
                 <div key={item.id} className="group bg-white/[0.01] border border-white/5 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] flex justify-between items-center group hover:bg-white/[0.03] transition-all">
@@ -245,10 +252,10 @@ export default function PasswordManager() {
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <button onClick={() => toggleVisibility(item.id)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl hover:text-white transition-colors">
-                      {visiblePassId === item.id ? <EyeOff size={18}/> : <Eye size={18}/>}
+                      {visiblePassId === item.id ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
-                    <button onClick={() => copyToClipboard(item.password)} className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-emerald-500/20 text-emerald-500 rounded-xl transition-colors"><Copy size={18}/></button>
-                    <button onClick={() => confirmDelete(item.id, item.title)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl hover:text-red-500 transition-colors"><Trash2 size={18}/></button>
+                    <button onClick={() => copyToClipboard(item.password)} className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-emerald-500/20 text-emerald-500 rounded-xl transition-colors"><Copy size={18} /></button>
+                    <button onClick={() => confirmDelete(item.id, item.title)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
                   </div>
                 </div>
               ))}
