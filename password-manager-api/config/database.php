@@ -58,12 +58,12 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                // 1014 es el valor numérico de MYSQL_ATTR_SSL_STRATEGY
-                // 1 es el valor numérico de MYSQL_ATTR_SSL_REQUIRED
+            'options' => [
+                // 1014 es MYSQL_ATTR_SSL_STRATEGY, valor 1 es SSL_REQUIRED
                 1014 => 1,
-                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+                // 1007 es MYSQL_ATTR_SSL_CA
+                1007 => env('MYSQL_ATTR_SSL_CA', '/etc/ssl/certs/ca-certificates.crt'),
+            ],
         ],
 
         'mariadb' => [
