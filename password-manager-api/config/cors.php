@@ -21,7 +21,7 @@ return [
 
     'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
 
-    'allowed_origins' => ['http://localhost:3000', 'http://192.168.1.69:3000'],
+    'allowed_origins' => ['http://localhost:3000', 'http://192.168.1.69:3000','https://vault-core.onrender.com'],
 
     'allowed_headers' => ['*'],
 
