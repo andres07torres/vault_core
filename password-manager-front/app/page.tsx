@@ -6,7 +6,7 @@ import {
   Copy, Plus, Search, LogOut, RefreshCw, Terminal, AlertTriangle, CheckCircle2
 } from 'lucide-react'
 
-// Configuración centralizada de la API
+// Configuración centralizada de la API - Prioriza la URL de Render
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 interface PasswordEntry {
@@ -38,9 +38,11 @@ export default function PasswordManager() {
   const fetchPasswords = useCallback(async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/passwords`);
+      // Validamos que la respuesta sea un arreglo para evitar errores de .map()
       setSavedPasswords(Array.isArray(response.data) ? response.data : []);
     } catch (error) { 
       console.error("Fetch error:", error); 
+      setSavedPasswords([]); // Limpiamos el estado en caso de error de conexión
     }
   }, []);
 
@@ -83,7 +85,7 @@ export default function PasswordManager() {
       await axios.post(`${API_BASE_URL}/api/passwords`, {
         title: title, 
         password: password, 
-        user_id: 1 // Cambiar por ID dinámico si implementas Auth real
+        user_id: 1 
       });
       setTitle(''); 
       setPassword('');
@@ -127,7 +129,6 @@ export default function PasswordManager() {
     p.title.toLowerCase().includes(search.toLowerCase())
   );
 
-  // VISTA DE ACCESO RESTRINGIDO
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#020203] flex items-center justify-center p-4 overflow-hidden relative text-white">
@@ -228,7 +229,6 @@ export default function PasswordManager() {
         </header>
 
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Panel de Generación */}
           <div className="lg:col-span-5 bg-white/[0.02] backdrop-blur-xl border border-white/5 p-6 sm:p-8 rounded-[2.5rem] sm:rounded-[3rem] shadow-2xl">
             <div className="space-y-6">
               <div className="flex items-center gap-2 text-blue-500"><Plus size={16} /><h2 className="text-[10px] font-black uppercase tracking-widest">Nuevo Registro</h2></div>
@@ -248,7 +248,6 @@ export default function PasswordManager() {
             </div>
           </div>
 
-          {/* Panel de Gestión de Credenciales */}
           <div className="lg:col-span-7 space-y-4">
             <div className="bg-white/5 p-4 rounded-2xl border border-white/5 flex items-center gap-4">
               <Search size={16} className="text-slate-500" />
