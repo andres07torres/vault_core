@@ -15,7 +15,7 @@ export default function PasswordManager() {
 
   const [password, setPassword] = useState('')
   const [title, setTitle] = useState('')
-  const [savedPasswords, setSavedPasswords] = useState<any[]>([]) 
+  const [savedPasswords, setSavedPasswords] = useState<unknown[]>([]) 
   const [search, setSearch] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [visiblePassId, setVisiblePassId] = useState<number | null>(null)
