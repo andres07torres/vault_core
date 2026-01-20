@@ -6,7 +6,7 @@ import {
   Copy, Plus, Search, LogOut, RefreshCw, Terminal, AlertTriangle, CheckCircle2
 } from 'lucide-react'
 
-// Configuración centralizada de la API - Prioriza la URL de Render
+// Priorizamos la URL de producción configurada en las variables de entorno de Render
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 interface PasswordEntry {
@@ -34,15 +34,16 @@ export default function PasswordManager() {
   const [itemToDelete, setItemToDelete] = useState<{ id: number, title: string } | null>(null)
   const [showCopyToast, setShowCopyToast] = useState(false)
 
-  // Sincronización con la Base de Datos
+  // Sincronización con la Base de Datos (TiDB Cloud vía API)
   const fetchPasswords = useCallback(async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/passwords`);
-      // Validamos que la respuesta sea un arreglo para evitar errores de .map()
-      setSavedPasswords(Array.isArray(response.data) ? response.data : []);
+      // Aseguramos que siempre manejamos un arreglo para evitar errores en .filter() o .map()
+      const data = Array.isArray(response.data) ? response.data : [];
+      setSavedPasswords(data);
     } catch (error) { 
       console.error("Fetch error:", error); 
-      setSavedPasswords([]); // Limpiamos el estado en caso de error de conexión
+      setSavedPasswords([]); 
     }
   }, []);
 
@@ -88,10 +89,11 @@ export default function PasswordManager() {
         user_id: 1 
       });
       setTitle(''); 
-      setPassword('');
+      setPassword(''); // Limpia el generador tras éxito
       fetchPasswords();
     } catch (error) { 
-      console.error("Save error:", error); 
+      console.error("Save error:", error);
+      alert("Error al guardar. Verifica la conexión con el servidor.");
     } finally { 
       setIsLoading(false); 
     }
@@ -114,11 +116,15 @@ export default function PasswordManager() {
     }
   }
 
-  const copyToClipboard = (text: string | undefined) => {
+  const copyToClipboard = async (text: string | undefined) => {
     if (!text) return;
-    navigator.clipboard.writeText(text);
-    setShowCopyToast(true);
-    setTimeout(() => setShowCopyToast(false), 2500);
+    try {
+      await navigator.clipboard.writeText(text);
+      setShowCopyToast(true);
+      setTimeout(() => setShowCopyToast(false), 2500);
+    } catch (err) {
+      console.error('Error al copiar:', err);
+    }
   }
 
   const toggleVisibility = (id: number) => {
@@ -126,7 +132,7 @@ export default function PasswordManager() {
   }
 
   const filteredPasswords = savedPasswords.filter((p) =>
-    p.title.toLowerCase().includes(search.toLowerCase())
+    p.title?.toLowerCase().includes(search.toLowerCase())
   );
 
   if (!isAuthenticated) {
@@ -160,7 +166,7 @@ export default function PasswordManager() {
   return (
     <div className="min-h-screen bg-[#020203] text-slate-300 flex flex-col items-center py-8 md:py-16 px-4 md:px-6 relative overflow-x-hidden animate-in fade-in duration-500">
 
-      {/* Notificación Global */}
+      {/* Notificación de Copiado */}
       <div className={`fixed top-8 right-8 z-[110] flex items-center gap-4 bg-[#0a0a0c]/90 backdrop-blur-2xl border border-emerald-500/30 px-6 py-4 rounded-2xl shadow-2xl transition-all duration-500 transform ${showCopyToast ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-10 opacity-0 scale-95 pointer-events-none'}`}>
         <div className="w-8 h-8 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20">
           <CheckCircle2 className="text-emerald-500 w-5 h-5" />
@@ -171,7 +177,7 @@ export default function PasswordManager() {
         </div>
       </div>
 
-      {/* Modal de Seguridad - Eliminación */}
+      {/* Modal de Eliminación */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
           <div className="relative max-w-sm w-full bg-[#0a0a0c] border border-red-500/20 p-10 rounded-[3rem] shadow-[0_0_100px_-20px_rgba(220,38,38,0.3)] text-center transform animate-in zoom-in-95 duration-300">
@@ -198,7 +204,7 @@ export default function PasswordManager() {
         </div>
       )}
 
-      {/* Control de Sesión Flotante */}
+      {/* Botón Cerrar */}
       <div className="fixed bottom-6 right-6 z-[100] group">
         <button
           onClick={() => setIsAuthenticated(false)}
@@ -229,6 +235,7 @@ export default function PasswordManager() {
         </header>
 
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Panel Generador */}
           <div className="lg:col-span-5 bg-white/[0.02] backdrop-blur-xl border border-white/5 p-6 sm:p-8 rounded-[2.5rem] sm:rounded-[3rem] shadow-2xl">
             <div className="space-y-6">
               <div className="flex items-center gap-2 text-blue-500"><Plus size={16} /><h2 className="text-[10px] font-black uppercase tracking-widest">Nuevo Registro</h2></div>
@@ -248,6 +255,7 @@ export default function PasswordManager() {
             </div>
           </div>
 
+          {/* Panel Lista */}
           <div className="lg:col-span-7 space-y-4">
             <div className="bg-white/5 p-4 rounded-2xl border border-white/5 flex items-center gap-4">
               <Search size={16} className="text-slate-500" />
