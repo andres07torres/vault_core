@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import { 
-  Lock, Key, ShieldCheck, Eye, EyeOff, Trash2, 
+  Lock, Key, Eye, EyeOff, Trash2, 
   Copy, Plus, Search, LogOut, RefreshCw, Terminal, AlertTriangle, X, CheckCircle2 
 } from 'lucide-react'
 
@@ -26,7 +26,7 @@ export default function PasswordManager() {
 
   const fetchPasswords = useCallback(async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/passwords');
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/passwords`);
       setSavedPasswords(response.data);
     } catch (error) { console.error("Fetch error:", error); }
   }, []);
