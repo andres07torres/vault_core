@@ -2,30 +2,24 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Artisan; // Importante añadir esta línea
 use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        //
-    }
-
-    /**
      * Bootstrap any application services.
      */
     public function boot(): void
     {
-        // Añade esta línea para evitar errores en las migraciones de TiDB
-        Schema::defaultStringLength(191);
-
-        ResetPassword::createUrlUsing(function (object $notifiable, string $token) {
-            return config('app.frontend_url')."/password-reset/$token?email={$notifiable->getEmailForPasswordReset()}";
-        });
+        // Esto ejecutará las migraciones automáticamente al iniciar
+        if (config('app.env') === 'production') {
+            try {
+                Artisan::call('migrate', ['--force' => true]);
+            } catch (\Exception $e) {
+                // Si falla, que no detenga la app
+            }
+        }
     }
 }
